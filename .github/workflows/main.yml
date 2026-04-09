@@ -1,29 +1,46 @@
 name: Obfuscate JavaScript
-
 on:
   push:
     branches:
-      - main 
+      - main
+    paths:
+      - 'script.js'
 jobs:
   obfuscate:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write      
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
-      - name: Install Obfuscator
-        run: npm install -g javascript-obfuscator
+          node-version: '20'
       - name: Obfuscate script.js
-        run: javascript-obfuscator script.js --config .javascript-obfuscatorrc.json --output script.js
+        run: |
+          # Это самая полная и мощная конфигурация
+          npx javascript-obfuscator script.js --output script.js \
+            --compact true \
+            --control-flow-flattening true \
+            --control-flow-flattening-threshold 1 \
+            --dead-code-injection true \
+            --dead-code-injection-threshold 1 \
+            --debug-protection true \
+            --debug-protection-interval 4000 \
+            --disable-console-output true \
+            --identifier-names-generator hexadecimal \
+            --self-defending true \
+            --string-array true \
+            --string-array-encoding 'base64' \
+            --string-array-threshold 1 \
+            --split-strings true \
+            --split-strings-chunk-length 5
+
       - name: Commit and Push changes
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
           git add script.js
-          git commit -m "Auto-obfuscation of script.js" || echo "No changes to commit"
+          git commit -m "Total Obfuscation Applied" || echo "No changes"
           git push
